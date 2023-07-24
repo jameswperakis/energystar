@@ -19,10 +19,10 @@ st.write('''Upload output .xlsx file from Portfolio Manager and transform the da
          Using **Latest** will pull data from the last calendar year (e.g. 2022)''')
 
 form_container = st.container()
-messages = st.empty()
 spacer1 = st.write('')
 spacer2 = st.write('')
 button_container = st.empty()
+messages = st.empty()
 
 def reset():
     messages.empty()
