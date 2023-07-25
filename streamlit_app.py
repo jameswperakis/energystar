@@ -384,17 +384,18 @@ def compile_building_data(building, method='Blend'):
                 #filter the dataframe to get only non-zero values
                 non_zero = resampled[resampled[m] > 0]
                 #group the values by year
-                vals_by_year = list(non_zero.groupby('year')[m].count().to_dict().items())
-                #sort the list by values ascending
-                sorted_years = sorted(vals_by_year, key=lambda v: v[1])
-                #grab the last item in the list, corresponding to the year with the most complete entries
-                year = sorted_years[-1][0]
-                meter_years.append(year)
-                df = resampled[resampled['year'] == year]
-                index_by_month = df.set_index('month')
-                series_dict = index_by_month[m].to_dict()
-                for k in series_dict:
-                    entries[f'{m}{k}'] = series_dict[k]
+                if len(non_zero) > 0:
+                    vals_by_year = list(non_zero.groupby('year')[m].count().to_dict().items())
+                    #sort the list by values ascending
+                    sorted_years = sorted(vals_by_year, key=lambda v: v[1])
+                    #grab the last item in the list, corresponding to the year with the most complete entries
+                    year = sorted_years[-1][0]
+                    meter_years.append(year)
+                    df = resampled[resampled['year'] == year]
+                    index_by_month = df.set_index('month')
+                    series_dict = index_by_month[m].to_dict()
+                    for k in series_dict:
+                        entries[f'{m}{k}'] = series_dict[k]
             
             if len(meter_years) == 0:
                 entries['year'] = ''
