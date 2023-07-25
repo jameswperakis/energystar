@@ -830,7 +830,7 @@ class Meter:
 
 #-------------------- MAIN EXECUTION --------------------
 
-def main(uploaded_file):
+def main(uploaded_file, fill_method):
     buildings = get_buildings(uploaded_file)
     meters = get_meters(uploaded_file)
     for meter in meters:
@@ -875,7 +875,7 @@ if uploaded_file is not None:
     messages.empty()
     button_container.empty()
     with st.spinner("Processing File..."):
-        path = main(uploaded_file)
+        path = main(uploaded_file, fill_method)
         with open(path, 'rb') as f:
             buffer = io.BytesIO(f.read())
     button_container.download_button('Download File', data=buffer, file_name=path, mime='application/vnd.ms-excel')
