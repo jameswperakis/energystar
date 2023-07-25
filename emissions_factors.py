@@ -70,24 +70,22 @@ def get_factors(fuel_types, country, postal):
     #'District Chilled Water - Other'
 
     factors = {'E': None, 'G': None, 'S': None, 'C': None, 'notes': None}
-    if 'E' in fuel_types:
-        if country == "United States" or country == 'USA' or country == 'US':
-            if postal in subregions:
-                subregion = subregions[postal]
-                if subregion in subregion_rates:
-                    factors['E'] = subregion_rates[subregion]
-                else:
-                    factors['E'] = subregion_rates['National Average']
-                    factors['notes'] = new_note(factors['notes'], 'Electricity subregion  not found.')
+
+    if country == "United States" or country == 'USA' or country == 'US':
+        if postal in subregions:
+            subregion = subregions[postal]
+            if subregion in subregion_rates:
+                factors['E'] = subregion_rates[subregion]
             else:
                 factors['E'] = subregion_rates['National Average']
-                factors['notes'] = new_note(factors['notes'], 'Zip code not found.')
+                factors['notes'] = new_note(factors['notes'], 'Electricity subregion  not found.')
         else:
-            factors['E'] = subregion_rates['Global Average']
-            factors['notes'] = new_note(factors['notes'], 'Used global average for electricity factor.')
+            factors['E'] = subregion_rates['National Average']
+            factors['notes'] = new_note(factors['notes'], 'Zip code not found.')
     else:
-        factors['E'] = subregion_rates['National Average']
-        factors['notes'] = new_note(factors['notes'], 'National average electricity factor.')
+        factors['E'] = subregion_rates['Global Average']
+        factors['notes'] = new_note(factors['notes'], 'Used global average for electricity factor.')
+
         
     
     if 'G' in fuel_types:

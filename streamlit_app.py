@@ -332,18 +332,20 @@ def get_meters(filepath):
 #take the meters in a buliding and convert the data to a simple monthly E, G, S, C, R frame
 def resample_meters(building):
     meters = building.meters
-    if len(meters) > 0:
-        meter_type = meters[0].meter_type
-        base = meters[0].entries.rename(columns={'kbtu': meter_type})
-        if len(meters) > 1:
-            for meter in meters[1:]:
-                meter_type = meter.meter_type
-                df = meter.entries.rename(columns={'kbtu': meter_type})
-                base = base.add(df, fill_value=0).fillna(0)
-        resampled = base.resample('M').sum()
-        return resampled
-    else:
-        return None
+    sample_dates = pd.date_range('1/1/2022', '1/1/2022', freq='D')
+    sample_zipped = zip(list(sample_dates), [0]*len(sample_dates))
+    sample_df = pd.DataFrame(list(sample_zipped), columns=['timestamp', 'E'])
+    base = sample_df.set_index('timestamp')
+
+
+    for meter in meters:
+        if len(meter.entries) >= 1:
+            meter_type = meter.meter_type
+            df = meter.entries.rename(columns={'kbtu': meter_type})
+            base = base.add(df, fill_value=0).fillna(0)
+
+    resampled = base.resample('M').sum()
+    return resampled
 
 
 #compile the monthly data and fill in missing data according to different methods
@@ -418,12 +420,13 @@ def compile_building_data(building, method='Blend'):
                 number_of_years = len(years)
                 years_with_possible_deliveries = len([y for y in years if y[1] <= 4])
                 #if this is a trend, smooth out the values over the course of a year
-                if years_with_possible_deliveries/number_of_years >= 0.5:
-                    #get the sum of each year, divide by 12, and apply it to non_zero dataframe
-                    for year in years:
-                        total = non_zero.loc[non_zero['year'] == year[0], m].sum()
-                        monthly = total/12
-                        non_zero.loc[non_zero['year'] == year[0], m] = monthly
+                if number_of_years > 0:
+                    if years_with_possible_deliveries/number_of_years >= 0.5:
+                        #get the sum of each year, divide by 12, and apply it to non_zero dataframe
+                        for year in years:
+                            total = non_zero.loc[non_zero['year'] == year[0], m].sum()
+                            monthly = total/12
+                            non_zero.loc[non_zero['year'] == year[0], m] = monthly
 
                 #get a list of all values by month, sorted by year
                 grouped_month = non_zero.groupby('month')
@@ -498,6 +501,7 @@ def create_excel(records, local_name):
         ['CITY', 5],
         ['STATE', 6],
         ['COUNTRY', 7],
+        ['ZIP', 8],
         *list(zip(['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'], list(range(12, 24)))),
         *list(zip(['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'], list(range(24, 36)))),
         *list(zip(['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'], list(range(36, 48)))),
@@ -620,7 +624,11 @@ class Building:
         return self._postal
     @postal.setter
     def postal(self, postal):
-        self._postal = str(postal).zfill(5)
+        padded = str(postal).zfill(5)
+        if '-' in padded:
+            self._postal = padded.split('-')[0]
+        else:
+            self._postal = padded
 
     @property
     def country(self):
@@ -683,7 +691,8 @@ class Building:
         if self._notes == None:
             self._notes = note
         else:
-            self._notes = '; '.join([self._notes, note])
+            if note is not None:
+                self._notes = '; '.join([self._notes, note])
 
 
 
@@ -782,7 +791,8 @@ class Meter:
         if self._notes == None:
             self._notes = note
         else:
-            self._notes = '; '.join([self._notes, note])
+            if note is not None:
+                self._notes = '; '.join([self._notes, note])
     
     @property
     def entries(self):
@@ -797,9 +807,9 @@ class Meter:
         else:
             if start == 'Not Available' and end == 'Not Available':
                 dates = pd.date_range(delivery, delivery, freq='D')
-            if start == 'Not Available' and delivery == 'Not Available':
+            elif start == 'Not Available' and delivery == 'Not Available':
                 dates = pd.date_range(end, end, freq='D')
-            if end == 'Not Available' and delivery == 'Not Available':
+            elif end == 'Not Available' and delivery == 'Not Available':
                 dates = pd.date_range(start, start, freq='D')
             else:
                 dates = pd.date_range(start, end, freq='D')
