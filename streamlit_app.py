@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 import io
 import pandas as pd
 import os
@@ -7,6 +8,7 @@ import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from emissions_factors import get_factors
+
 
 
 
@@ -830,6 +832,8 @@ class Meter:
 
 #-------------------- MAIN EXECUTION --------------------
 
+# @st.cache_data(hash_funcs={UploadedFile: lambda f: f.read()}, show_spinner=False)
+@st.cache_data(show_spinner=False)
 def main(uploaded_file, fill_method):
     buildings = get_buildings(uploaded_file)
     meters = get_meters(uploaded_file)
