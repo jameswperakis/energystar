@@ -238,7 +238,11 @@ def get_buildings(filepath):
         
         if building is not None:
             use_type = df_uses['Use Type'][ind]
-            area = int(df_uses['Gross Floor Area for Use'][ind])
+            try:
+                area = int(df_uses['Gross Floor Area for Use'][ind])
+            except:
+                area = 0
+                building.add_note(f'Unable to get area {area} from use type {use_type}.')
             area_units = df_uses['Gross Floor Area Units'][ind]
             if area_units != 'Sq. Ft.':
                 try:
