@@ -362,7 +362,7 @@ def compile_building_data(building, method='Blend'):
     entries['year'] = None
     
     if len(building.meters) > 0:
-        meter_types = [m.meter_type for m in building.meters]
+        meter_types = list(set([m.meter_type for m in building.meters]))
         resampled = resample_meters(building)
         
         resampled['month'] = resampled.apply(lambda row: row.name.month, axis=1)
