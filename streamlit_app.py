@@ -54,7 +54,7 @@ def convert(t, a, b):
             'GJ': {'kBtu (thousand Btu)': 947.817},
             'kcf (thousand cubic feet)': {'kBtu (thousand Btu)': 1026},
             'MBtu/ MMBtu/ Dth (million Btu/ dekatherm)': {'kBtu (thousand Btu)': 1000},
-            'Mcf (million cibic feet)': {'kBtu (thousand Btu)': 1026000},
+            'Mcf (million cubic feet)': {'kBtu (thousand Btu)': 1026000},
             'therms': {'kBtu (thousand Btu)': 100}
         },
         'Propane': {
